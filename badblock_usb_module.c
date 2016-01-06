@@ -17,7 +17,7 @@ static void badblock_disconnect(struct usb_interface *interface){
 //usb_device_id
 static struct usb_device_id badblock_table[] = {
 	//
-	{ USB_DEVICE(0x0781, 0x5406) }	, // information is obtained using "lsusb" in the terminal
+	{ USB_DEVICE(0x0781, 0x5406) }	, 
 	{} /* terminating entry */
 };
 MODULE_DEVICE_TABLE(usb, badblock_table);
