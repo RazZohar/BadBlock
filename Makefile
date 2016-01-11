@@ -20,3 +20,4 @@ remove_maxwell:
 
 clean:
 	rm -rf *.o *.mod.* *.symvers *.order *~ *.cmd ./.*
+
