@@ -3,16 +3,23 @@
 #include <linux/kernel.h>
 #include <linux/usb.h>
 
-//VENDOR ID 0x0781 is the vendor id of SanDisk
-#define VENDORID 0x0781
-#define PRODUCTID 0x5567
+//Mass storage device
+#define B_INTERFACE_CLASS 8
 
+//SCSI Sub class interface
+#define B_INTERFACE_SUB_CLASS 6
+
+//BULK only Protocol
+#define B_INTERFACE_PROTOCOL 80
+
+const int bInterfaceClass = 8;	
+const int bInterfaceSubClass = 6;	//SCSI Sub class interface
 
 
 //When The USB device is plug in
 static int usb_probe(struct usb_interface *interface, const struct usb_device_id *id)
 {
-	printk("USB device (%04X:%04X) is plugged in\n", id->idVendor, id->idProduct);
+	printk("USB device is plugged in\n");
 	return 0; 
 }
 
@@ -22,11 +29,11 @@ static void usb_disconnect(struct usb_interface *interface)
 	printk("USB device is disconnected\n");
 }
 
-//usb device id  paramters
+//usb device id  paramterss
 static struct usb_device_id usb_table[] = 
 {
-	//
-	{ USB_DEVICE(VENDORID, PRODUCTID) }	, 
+	//USB_INTERFACE_INFO
+	{ USB_INTERFACE_INFO(B_INTERFACE_CLASS, B_INTERFACE_SUB_CLASS, B_INTERFACE_PROTOCOL) }	, 
 	{} /* terminating entry */
 };
 
