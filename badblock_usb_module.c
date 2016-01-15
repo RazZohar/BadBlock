@@ -2,6 +2,9 @@
 #include <linux/kernel.h>
 #include <linux/usb.h>
 
+MODULE_LICENSE("GPL");
+MODULE_AUTHOR("Maxwell Knight");
+MODULE_DESCRIPTION("BadBlock USB-Attacks blocker.");
 
 static int badblock_probe(struct usb_interface *interface, const struct usb_device_id *id){
 
@@ -49,5 +52,4 @@ static void __exit badblock_exit(void){
 }
 
 module_init(badblock_init);
-module_exit(badblock_exit);
-MODULE_LICENSE("GPL");
+module_exit(badblock_exit)
