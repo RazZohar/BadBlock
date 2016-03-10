@@ -1,0 +1,4 @@
+ACTION=="add", ATTR{idVendor}=="0781", ATTR{idProduct}=="5530", ATTRS{authorized}=="1", \
+  ENV{PARID}="$id", RUN+="/bin/sh -c 'echo 0 >/sys/bus/usb/devices/$env{PARID}/authorized'"
+
+
