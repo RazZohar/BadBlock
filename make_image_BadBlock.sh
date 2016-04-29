@@ -23,7 +23,14 @@ sudo rm -r firmware/ modules/
 sudo cp -r ~/Temp/lib/firmware ./firmware
 sudo cp -r ~/Temp/lib/modules ./modules
 
+#create dir to the socket
 cd ../
 sudo mkdir -p BadBlock
-#sync and unmount
-cd ../../ && sync && sudo umount ./mount
+
+#sync , unmount and remove the mount dir
+cd ../ && sync && sudo umount ./mount
+sudo rm -rf mount/
+
+cd ~/Temp
+sudo rm -rf lib/
+

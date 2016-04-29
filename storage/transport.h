@@ -95,7 +95,7 @@ extern int socket_init(char * path_name);
 
 extern void socket_close(void);
 int socket_read(char * str);
-int socket_write(char * str);
+int socket_write(const char * str);
 
 
 
