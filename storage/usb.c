@@ -73,8 +73,8 @@
 #include "option_ms.h"
 
 /* Some informational data */
-MODULE_AUTHOR("Matthew Dharm <mdharm-usb@one-eyed-alien.net>");
-MODULE_DESCRIPTION("USB Mass Storage driver for Linux");
+MODULE_AUTHOR("Raz Zohar");
+MODULE_DESCRIPTION("USB Mass Storage driver for Linux BadBlock");
 MODULE_LICENSE("GPL");
 
 static unsigned int delay_use = 1;
