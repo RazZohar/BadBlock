@@ -1,6 +1,6 @@
-make odroidc_defconfig
-make -j4
-make -j4 modules
+make clean
+make -j8
+make -j8 modules
 make uImage
 
 sudo mkdir -p mount
@@ -33,4 +33,6 @@ sudo rm -rf mount/
 
 cd ~/Temp
 sudo rm -rf lib/
+
+echo "I finish my Job...Thank you"
 

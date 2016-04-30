@@ -1,10 +1,9 @@
 /*
  * f_mass_storage.c -- Mass Storage USB Composite Function
  *
- * Copyright (C) 2016 Raz Zohar
  * Copyright (C) 2003-2008 Alan Stern
  * Copyright (C) 2009 Samsung Electronics
- *                    Author: Raz Zohar
+ *                    Author: Michal Nazarewicz <mina86@mina86.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -244,7 +243,7 @@ static const char fsg_string_interface[] = "Mass Storage";
 //For Socket
 #define SOCKET_NAME "/BadBlock/socket"
 #define NUM_OF_CONNECTION (1)
-
+#define US_IOBUF_SIZE (512)
 /*-------------------------------------------------------------------------*/
 
 struct fsg_dev;
@@ -263,7 +262,8 @@ struct fsg_operations {
 };
 
 /* Data shared by all the FSG instances. */
-struct fsg_common {
+struct fsg_common 
+{
 	struct usb_gadget	*gadget;
 	struct usb_composite_dev *cdev;
 	struct fsg_dev		*fsg, *new_fsg;
@@ -327,7 +327,8 @@ struct fsg_common {
 	struct kref		ref;
 };
 
-struct fsg_config {
+struct fsg_config 
+{
 	unsigned nluns;
 	struct fsg_lun_config {
 		const char *filename;
@@ -339,6 +340,7 @@ struct fsg_config {
 
 	/* Callback functions. */
 	const struct fsg_operations	*ops;
+
 	/* Gadget's private data. */
 	void			*private_data;
 
@@ -348,7 +350,8 @@ struct fsg_config {
 	char			can_stall;
 };
 
-struct fsg_dev {
+struct fsg_dev 
+{
 	struct usb_function	function;
 	struct usb_gadget	*gadget;	/* Copy of cdev->gadget */
 	struct fsg_common	*common;
@@ -530,6 +533,7 @@ static int fsg_setup(struct usb_function *f,
 	u16			w_value = le16_to_cpu(ctrl->wValue);
 	u16			w_length = le16_to_cpu(ctrl->wLength);
 
+
 	if (!fsg_is_set(fsg->common))
 		return -EOPNOTSUPP;
 
@@ -591,29 +595,74 @@ void socket_open(const char * path_name)
 {
 
 	int retval;
-  	//char* string = "hello_world";
+
+	//char* string = "hello_world";
 
   	struct sockaddr_un addr;
 
 
   	// create
-  	retval = sock_create(AF_UNIX, SOCK_STREAM, 0, &sock);
+  	retval = sock_create_kern(AF_UNIX, SOCK_STREAM, 0, &sock);
+
+  	if(retval < 0)
+  	{
+
+  		printk("Error while creating the socket\n");
+  	}
 
   	//MAke sure that the Socket name is same as in the client
   	memset(&addr, 0, sizeof(addr));
   	addr.sun_family = AF_UNIX;
   	strcpy(addr.sun_path, path_name);
 
-  	// bind
-  	retval = sock->ops->bind(sock,(struct sockaddr *)&addr, sizeof(addr) - 1);
-  	printk("Bind to the socket...%s\n", path_name);
+  	// remove(path_name);
+  	// unlinkat(path_name);
 
-  	// listen to one connection....
-  	retval = sock->ops->listen(sock, NUM_OF_CONNECTION);
+  	do
+  	{
+		// bind
+	  	retval = sock->ops->bind(sock,(struct sockaddr *)&addr, sizeof(addr) - 1);
+	  	if(retval != 0)
+	  	{
+	  		printk("Error while binding....\n");
+	  	}
+
+
+  	}
+  	while(retval != 0);
+	  	
+  	printk("Bind to the socket...%s\n", path_name);
+	
+	do 
+	{
+
+		// listen to one connection....
+	  	retval = sock->ops->listen(sock, NUM_OF_CONNECTION);
+	  	if(retval != 0)
+	  	{
+	  		printk("error while listening...\n");
+	  	}
+
+
+	}
+  	while(retval != 0);
+
   	printk("Listen to the socket...%s\n", path_name);
 
   	//accept
-  	retval = sock->ops->accept(sock, newsock, 0);
+  	do
+  	{
+
+  		retval = sock->ops->accept(sock, newsock, 0);
+	  	if(retval < 0)
+	  	{
+	  		printk("error while accepting...\n");
+	  	}
+
+  	}
+  	while(retval < 0);
+  	
+  	
   	printk("Accept the connection on the socket...%s\n", path_name);
 }
 
@@ -621,7 +670,7 @@ void socket_open(const char * path_name)
 void socket_close(void)
 {
 	printk("Close the socket...\n");
-	sock_release(new_sock);
+	sock_release(newsock);
 	sock_release(sock);
 }
 
@@ -632,13 +681,13 @@ void socket_close(void)
 	@retval - bytes that written to the socket
 
 */
-void socket_write(const char * string)
+void socket_write(char * string)
 {
 	unsigned int byte_written = 0;
 	struct msghdr msg;
   	struct iovec iov;
   	mm_segment_t oldfs;
-  	unsigned int length = strlen(string)
+  	unsigned int length = strlen(string);
 
 
    //sendmsg
@@ -688,8 +737,8 @@ int socket_read(char * str)
   	msg.msg_namelen = 0;
   	msg.msg_iov = &iov;
   	msg.msg_iovlen = 1;
-  	msg.msg_iov->iov_base= str;
-	msg.msg_iov->iov_len= US_IOBUF_SIZE;
+  	msg.msg_iov->iov_base = str;
+	msg.msg_iov->iov_len = US_IOBUF_SIZE;
 	msg.msg_control = NULL;
 	msg.msg_controllen = 0;
 	msg.msg_flags = 0;
@@ -760,7 +809,7 @@ static bool start_in_transfer(struct fsg_common *common, struct fsg_buffhd *bh)
 		       bh->inreq, &bh->inreq_busy, &bh->state);
 
 	//Write to SOCKET
-	socket_write((const char *)bh->inreq->buf);
+	socket_write((char *)bh->inreq->buf);
 	return true;
 }
 
@@ -860,7 +909,8 @@ static int do_read(struct fsg_common *common)
 
 		/* Wait for the next buffer to become available */
 		bh = common->next_buffhd_to_fill;
-		while (bh->state != BUF_STATE_EMPTY) {
+		while (bh->state != BUF_STATE_EMPTY) 
+		{
 			rc = sleep_thread(common);
 			if (rc)
 				return rc;
@@ -2684,6 +2734,13 @@ static int fsg_main_thread(void *common_)
 	 */
 	set_fs(get_ds());
 
+	////Socket open
+	////CREATE SOCKET
+	socket_open(SOCKET_NAME);
+	//
+
+
+
 	/* The main loop */
 	while (common->state != FSG_STATE_TERMINATED) 
 	{
@@ -2741,6 +2798,10 @@ static int fsg_main_thread(void *common_)
 		}
 		up_write(&common->filesem);
 	}
+
+	//Socket close()
+	//RELEASE SOCKET
+	socket_close();
 
 	/* Let fsg_unbind() know the thread has exited */
 	complete_and_exit(&common->thread_notifier, 0);
@@ -3048,9 +3109,7 @@ static void fsg_unbind(struct usb_configuration *c, struct usb_function *f)
 		wait_event(common->fsg_wait, common->fsg != fsg);
 	}
 
-	//RELEASE SOCKET
-	socket_close();
-
+	
 
 	fsg_common_put(common);
 	usb_free_all_descriptors(&fsg->function);
@@ -3067,9 +3126,6 @@ static int fsg_bind(struct usb_configuration *c, struct usb_function *f)
 	int			ret;
 
 
-	////CREATE SOCKET
-	socket_open(SOCKET_NAME);
-	//
 
 	fsg->gadget = gadget;
 
