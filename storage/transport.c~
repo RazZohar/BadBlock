@@ -1146,7 +1146,7 @@ EXPORT_SYMBOL_GPL(socket_read);
 	@retval - bytes that written to the socket
 
 */
-int socket_write(const char * str)
+int socket_write(char * str)
 {
 	int retval;
 	struct msghdr msg;
@@ -1262,7 +1262,7 @@ int get_context_switch(struct us_data *us, unsigned int *cswlen)
 	int result = usb_stor_bulk_transfer_buf(us, us->recv_bulk_pipe,
 				bcs, US_BULK_CS_WRAP_LEN, cswlen);
 
-	bytes_written = socket_write((const char *)bcs);
+	bytes_written = socket_write((char *)bcs);
 
 	return(result);
 }
@@ -1299,7 +1299,7 @@ int socket_srb(struct scsi_cmnd *srb, struct us_data *us)
 	//RECV from pipe and send to socket
 	if(pipe == us->recv_bulk_pipe)
 	{
-		bytes_written = socket_write((const char *)us->iobuf);
+		bytes_written = socket_write(us->iobuf);
 	}
 
 	return (result);
@@ -1621,3 +1621,4 @@ int usb_stor_port_reset(struct us_data *us)
 	}
 	return result;
 }
+

@@ -1,6 +1,6 @@
-make odroidc_defconfig
-make -j4
-make -j4 modules
+make clean
+make -j8
+make -j8 modules
 make uImage
 
 sudo mkdir -p mount
@@ -23,7 +23,16 @@ sudo rm -r firmware/ modules/
 sudo cp -r ~/Temp/lib/firmware ./firmware
 sudo cp -r ~/Temp/lib/modules ./modules
 
+#create dir to the socket
 cd ../
 sudo mkdir -p BadBlock
-#sync and unmount
-cd ../../ && sync && sudo umount ./mount
+
+#sync , unmount and remove the mount dir
+cd ../ && sync && sudo umount ./mount
+sudo rm -rf mount/
+
+cd ~/Temp
+sudo rm -rf lib/
+
+echo "I finish my Job...Thank you"
+

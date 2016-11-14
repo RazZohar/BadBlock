@@ -28,4 +28,17 @@ sudo cp arch/arm/boot/uImage arch/arm/boot/dts/meson8b_odroidc.dtb ./mount && sy
 
 #MOunt the 2nd partion
 sudo mount -o loop,offset=136314880 ubuntu-14.04.3lts-lubuntu-odroid-c1-20150811.img ./mount
-sudo make modules_install ARCH=arm INSTALL_MOD_PATH=./mount && sync && sudo umount ./mount
+
+#creat temp dir to install the module
+sudo make modules_install ARCH=arm INSTALL_MOD_PATH=~/Temp 
+
+#remove the old modules&firmware
+cd ./mount/lib/
+sudo rm -r firmware/ modules/
+
+#copy the new firamware and modules
+sudo cp -r ~/Temp/lib/firmware ./firmware
+sudo cp -r ~/Temp/lib/modules ./modules
+
+#sync and unmount
+cd ../../ && sync && sudo umount ./mount
